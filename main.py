@@ -55,16 +55,54 @@ jobs_url = "https://www.linkedin.com/jobs/search/?currentJobId=3060295800&f_AL=t
 #jobs_url = "https://www.linkedin.com/jobs/search/?f_AL=true&f_PP=104116203&f_TPR=r86400&geoId=103644278&keywords=software%20engineer%20python&location=United%20States&sortBy=R"
 
 
-driver.get(jobs_url)
 
-jobs = WebDriverWait(driver, 10).until(EC.presence_of_all_elements_located(
-    (By.CLASS_NAME, "jobs-search-results__list-item")))
-time.sleep(10)
-jobs = driver.find_elements(By.CLASS_NAME, "jobs-search-results__list-item")
-for job in jobs:
-    print(job.text)
+applications = {}
+f = open("submissions.txt", "a")
+pages = ["", "&start=25", "&start=50", "&start=75", "&start=100"]
 
-driver.quit()
+for page in pages:
+    driver.get(jobs_url + page)
+    jobs = WebDriverWait(driver, 10).until(EC.presence_of_all_elements_located(
+        (By.CLASS_NAME, "jobs-search-results__list-item")))
+    time.sleep(10)
+    jobs = driver.find_elements(
+        By.CLASS_NAME, "jobs-search-results__list-item")
+    for job in jobs:
+        '''
+        next, review, and submit application have a class  name of "artdeco-button"
+        checkbox for follow company is "t-14"
+        '''
+        job.click()
+        company = driver.find_element(
+            By.CLASS_NAME, "job-card-container__company-name").text
+        job_title = driver.find_element(
+            By.CLASS_NAME, "job-card-list__title").text
+        entry = (company, job_title)
+        f.write(str(entry))
+        f.write("\n")
+        easy_apply = WebDriverWait(driver, 5).until(
+            EC.presence_of_element_located((By.CLASS_NAME, "jobs-apply-button")))
+        easy_apply = driver.find_element(By.CLASS_NAME, "jobs-apply-button")
+        easy_apply.click()
+        time.sleep(5)
+        '''Make this below section into a while True loop. You can use try and except, where except
+        changes the state of your condition to False'''
+        click_next = WebDriverWait(driver, 5).until(
+            EC.presence_of_element_located((By.CLASS_NAME, "artdeco-button--primary")))
+        click_next.click()
+        click_next = WebDriverWait(driver, 5).until(
+            EC.presence_of_element_located((By.CLASS_NAME, "artdeco-button--primary")))
+        click_next.click()
+        click_next = WebDriverWait(driver, 5).until(
+            EC.presence_of_element_located((By.CLASS_NAME, "artdeco-button--primary")))
+        click_next.click()
+        '''Make this above section into a while True loop. You can use try and except, where except
+        changes the state of your condition to False'''
+        time.sleep(7)
+        exit_modal = WebDriverWait(driver, 5).until(EC.presence_of_element_located(By.CLASS_NAME, "artdeco-modal__dismiss"))
+        exit_modal.click()
+
+# driver.quit()
 print("done")
 
 
@@ -77,14 +115,4 @@ page2: url + "&start=25"
 page3: url + "&start=50"
 page4: url + "&start=75"
 etc...
-
-For determining whether there's a "Next", "Review", or "Submit" then you should be able to access the text content from the below class:
-class="artdeco-button__text"
-'''
-
-'''
-r = requests.get(url)
-soup = BeautifulSoup(r.content, "html.parser")
-lists = soup.find_all("div", class_="base-card")
-print(len(lists))
 '''
