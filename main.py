@@ -11,31 +11,60 @@ import time
 import os
 from dotenv import load_dotenv
 
+# Keys
 load_dotenv()
 EMAIL = os.environ.get("EMAIL")
 PW = os.environ.get("PW")
 
-
+# Config
 options = FirefoxOptions()
 driver = webdriver.Firefox(service=Service(
     GeckoDriverManager().install()), options=options)
 
-login_url = "https://www.linkedin.com/checkpoint/rm/sign-in-another-account"
-url = "https://www.linkedin.com/jobs/search/?f_AL=true&geoId=103644278&keywords=software%20engineer%20python&location=United%20States"
 
-driver.get(login_url)
-username = WebDriverWait(driver, 10).until(
-    EC.presence_of_element_located((By.ID, "username")))
-username.send_keys(EMAIL)
+def login():
+    login_url = "https://www.linkedin.com/checkpoint/rm/sign-in-another-account"
+    driver.get(login_url)
 
-password = driver.find_element(By.ID, "password")
-password.send_keys(PW)
+    username = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.ID, "username")))
+    username.send_keys(EMAIL)
 
-login = driver.find_element(By.CLASS_NAME, "btn__primary--large")
-login.click()
+    password = driver.find_element(By.ID, "password")
+    password.send_keys(PW)
 
+    login = driver.find_element(By.CLASS_NAME, "btn__primary--large")
+    login.click()
+
+    return f"Successfully logged in!"
+
+
+login()
+
+'''
+Criteria:
+    - Search: "software engineer python"
+    - Experience: "internship, entry-level, associate"
+    - Easy Apply: selected
+Add "&start=25" to the end of jobs_url to go to next page. Additional pages increment by 25
+'''
+# Jobs posted in the last week. There's typically ~120 postings
+jobs_url = "https://www.linkedin.com/jobs/search/?currentJobId=3060295800&f_AL=true&f_E=1%2C2%2C3&f_PP=104116203&f_TPR=r604800&geoId=103644278&keywords=software%20engineer%20python&location=United%20States&sortBy=R"
+
+# Remote jobs in the last week
+#jobs_url = "https://www.linkedin.com/jobs/search/?f_AL=true&f_PP=104116203&f_TPR=r86400&geoId=103644278&keywords=software%20engineer%20python&location=United%20States&sortBy=R"
+
+
+driver.get(jobs_url)
+
+jobs = WebDriverWait(driver, 10).until(EC.presence_of_all_elements_located(
+    (By.CLASS_NAME, "jobs-search-results__list-item")))
 time.sleep(10)
-# driver.quit()
+jobs = driver.find_elements(By.CLASS_NAME, "jobs-search-results__list-item")
+for job in jobs:
+    print(job.text)
+
+driver.quit()
 print("done")
 
 
